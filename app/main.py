@@ -1,4 +1,3 @@
-import os
 from fastapi import FastAPI
 
 app = FastAPI(title="DevSecOps Pipeline Demo", version="1.0.0")
