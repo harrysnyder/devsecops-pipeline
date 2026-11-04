@@ -1,4 +1,4 @@
-from fastapi.testclient import TestClient
+from fastapi.testclient import TestClient as TestClient  # noqa
 
 from app.main import app
 
