@@ -10,6 +10,28 @@ permissions:
   contents: read
 
 jobs:
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run lint checks
+        run: ruff check app/ tests/
+
+      - name: Check formatting
+        run: ruff format --check app/ tests/
+
   test:
     name: Python Unit Tests
     runs-on: ubuntu-24.04
@@ -30,5 +52,4 @@ jobs:
           pip install pytest httpx
 
       - name: Run unit tests
-        run: |
-          python -m pytest -v
+        run: python -m pytest -v
