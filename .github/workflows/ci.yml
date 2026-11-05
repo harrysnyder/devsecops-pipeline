@@ -79,3 +79,33 @@ jobs:
           ignore-unfixed: true
           exit-code: '1'
           scanners: vuln
+
+  publish:
+    name: Publish Container Image
+    runs-on: ubuntu-24.04
+    needs: [lint, test, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v5
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and publish hardened image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.distroless-py313
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
