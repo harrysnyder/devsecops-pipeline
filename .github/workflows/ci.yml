@@ -70,7 +70,7 @@ jobs:
             .
 
       - name: Scan container for fixable vulnerabilities
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@v0.33.1
         with:
           image-ref: devsecops-pipeline:ci
           format: table
