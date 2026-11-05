@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Install Ruff
         run: pip install ruff
@@ -43,7 +43,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Install dependencies
         run: |
@@ -53,3 +53,28 @@ jobs:
 
       - name: Run unit tests
         run: python -m pytest -v
+
+  security:
+    name: Container Security Scan
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v5
+
+      - name: Build hardened container image
+        run: |
+          docker build \
+            -f Dockerfile.distroless-py313 \
+            -t devsecops-pipeline:ci \
+            .
+
+      - name: Scan container for fixable vulnerabilities
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: devsecops-pipeline:ci
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+          scanners: vuln
