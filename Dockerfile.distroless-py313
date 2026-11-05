@@ -1,0 +1,30 @@
+# Stage 1: Build Python dependencies
+FROM python:3.13-slim-trixie AS builder
+
+WORKDIR /build
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir \
+    --prefix=/install \
+    -r requirements.txt
+
+# Stage 2: Distroless runtime
+FROM gcr.io/distroless/python3-debian13:nonroot AS runtime
+
+WORKDIR /app
+
+# Copy the Python 3.12 runtime and dependencies
+COPY --from=builder /install/lib/python3.13/site-packages /app/deps
+
+COPY --chown=65532:65532 app/ ./app/
+
+USER 65532:65532
+
+ENV PYTHONPATH=/app/deps
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 8000
+
+ENTRYPOINT ["/usr/bin/python3"]
+CMD ["-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
