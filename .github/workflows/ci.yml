@@ -73,6 +73,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.33.1
         with:
           image-ref: devsecops-pipeline:ci
+          version: v0.76.2
           format: table
           severity: HIGH,CRITICAL
           ignore-unfixed: true
