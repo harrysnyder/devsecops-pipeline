@@ -14,6 +14,9 @@ RUN pip install --no-cache-dir \
 # Stage 2: Runtime
 FROM python:3.12-slim AS runtime
 
+# Apply available Debian security updates
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copy installed dependencies from builder

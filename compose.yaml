@@ -1,0 +1,28 @@
+services:
+  api:
+    image: ${DEPLOY_IMAGE:-ghcr.io/harrysnyder/devsecops-pipeline:latest}
+    container_name: devsecops-api-compose
+    restart: unless-stopped
+
+    ports:
+      - "127.0.0.1:8007:8000"
+
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+
+    security_opt:
+      - no-new-privileges:false
+
+    healthcheck:
+      test:
+        - CMD
+        - /usr/bin/python3
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
