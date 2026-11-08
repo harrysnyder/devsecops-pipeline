@@ -9,10 +9,27 @@ RUN pip install --no-cache-dir \
     --prefix=/install \
     -r requirements.txt
 
-# Stage 2: Distroless runtime
+# Stage 2: Obtain patched Debian runtime libraries
+FROM python:3.13-slim-trixie AS security-patches
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --only-upgrade zlib1g && \
+    rm -rf /var/lib/apt/lists/*
+
+# Export the installed package record for the distroless runtime
+RUN dpkg-query -s zlib1g > /tmp/zlib1g-status
+RUN cp /var/lib/dpkg/info/zlib1g:amd64.md5sums /tmp/zlib1g.md5sums
+
+# Stage 3: Distroless runtime
 FROM gcr.io/distroless/python3-debian13:nonroot AS runtime
 
 WORKDIR /app
+
+# Replace vulnerable zlib with the official Debian security update
+COPY --from=security-patches /usr/lib/x86_64-linux-gnu/libz.so.1.3.1 /usr/lib/x86_64-linux-gnu/libz.so.1.3.1
+COPY --from=security-patches /tmp/zlib1g-status /var/lib/dpkg/status.d/zlib1g
+COPY --from=security-patches /tmp/zlib1g.md5sums /var/lib/dpkg/status.d/zlib1g.md5sums
+
 
 # Copy the Python 3.12 runtime and dependencies
 COPY --from=builder /install/lib/python3.13/site-packages /app/deps
